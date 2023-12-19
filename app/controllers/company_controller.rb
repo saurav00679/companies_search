@@ -32,6 +32,11 @@ class CompanyController < ApplicationController
 
   def create
     if ['admin', 'superadmin'].include?(@user['role'])
+
+      if params['name'].nil? || params['location'].nil?
+        return render_error('Name and location cannot be blank.', :unauthorized)
+      end
+
       company = Company.create!(name: params['name'], location: params['location'])
 
       render json: company

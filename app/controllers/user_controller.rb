@@ -29,12 +29,13 @@ class UserController < ApplicationController
   end
 
   def admin_request_action
-    users = User.where(id: params['user_ids'].split(','), role: 'requested_for_admin')
+    users = User.where(id: params['user_ids'].to_s.split(','), role: 'requested_for_admin')
 
     if users.exists?
+      ids = users.pluck(:id).join(',')
       users.update_all(role: 'admin')
 
-      render json: {message: "Given admin access to users with id #{params['user_ids']}"}
+      render json: {message: "Given admin access to users with id #{ids}"}
     else
       render json: {message: "Users with id #{params['user_ids']} had not requested for admin access or are already admin."}
     end
@@ -45,7 +46,7 @@ class UserController < ApplicationController
   def authenticate_user
     @user = User.find_by_email(params['email'])
 
-    render_error('No user with this email. You need to sign up.') if @user.nil?
+    return render_error('No user with this email. You need to sign up.') if @user.nil?
 
     render_error('Incorrect password.', :unauthorized) unless @user.authenticate(params['password'])
   end
